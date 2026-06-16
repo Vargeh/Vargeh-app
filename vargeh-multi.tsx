@@ -93,6 +93,71 @@ const SAMPLE=[
 
 const Bdg=({l,c=C.accent,sm})=>(<span style={{background:c+"22",color:c,border:`1px solid ${c}44`,borderRadius:6,padding:sm?"1px 7px":"3px 10px",fontSize:sm?10:11,fontWeight:700,whiteSpace:"nowrap"}}>{l}</span>);
 
+function AddAnimal({onClose, animals, saveAnimals, toast_}){
+  const[fd,setFd]=useState({type:"میش",genotype:"BB",entryType:"خرید",status:"در گله"});
+  const sv=(k,v)=>setFd(p=>({...p,[k]:v}));
+  const inpS2={background:"#142019",border:"1px solid #263D2C",borderRadius:8,padding:"9px 12px",color:"#E4EDE6",fontFamily:"inherit",fontSize:14,width:"100%",outline:"none",boxSizing:"border-box"};
+  const lbl2={fontSize:11,color:"#4E6B56",marginBottom:4,display:"block",fontWeight:600};
+  const g22={display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:12};
+  const F=(l,k,opts,ph,tp)=>(
+    <div>
+      <label style={lbl2}>{l}</label>
+      {opts
+        ?<select value={fd[k]||""} onChange={e=>sv(k,e.target.value)} style={inpS2}>
+          <option value="">—</option>{opts.map(o=><option key={o}>{o}</option>)}
+        </select>
+        :<input type={tp||"text"} value={fd[k]||""} placeholder={ph||""} onChange={e=>sv(k,e.target.value)} style={inpS2}/>
+      }
+    </div>
+  );
+  const save=()=>{
+    if(!fd.id){alert("کد داخلی الزامی");return;}
+    if(animals.find(a=>a.id===fd.id)){alert("کد تکراری");return;}
+    const na=[...animals,{...fd,
+      entryWeight:+fd.entryWeight||0,
+      purchasePrice:+fd.purchasePrice||0,
+      costs:[],revenues:[],quickNotes:[],
+      vaccines:[],reproductions:[],
+      weights:[],treatments:[],
+      createdAt:new Date().toISOString()
+    }];
+    saveAnimals(na);onClose();toast_("✓ دام ثبت شد");
+  };
+  const cs2={background:"#1C2E22",border:"1px solid #263D2C",borderRadius:12,padding:16};
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:900,padding:14}}>
+      <div style={{...cs2,width:"100%",maxWidth:480,maxHeight:"90vh",overflowY:"auto"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <div style={{fontWeight:800,fontSize:16,color:"#E4EDE6"}}>➕ ثبت دام جدید</div>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"#4E6B56",fontSize:24,cursor:"pointer"}}>✕</button>
+        </div>
+        <div style={g22}>
+          {F("کد داخلی *","id",null,`VRG-${String(animals.length+1).padStart(3,"0")}`)}
+          {F("شناسه الکترونیکی (RFID)","rfid",null,"982000...")}
+          {F("نام دام","name",null,"مثال: ستاره")}
+          {F("نوع","type",["میش","قوچ","بره"])}
+          {F("ژنوتیپ (FecB)","genotype",["BB","B+","++"])}
+          {F("تاریخ تولد","birthDate",null,"۱۴۰۲/۰۳/۱۵")}
+          {F("سن تخمینی","estimatedAge",null,"۲ سال")}
+          {F("تاریخ ورود","entryDate",null,"۱۴۰۲/۰۶/۰۱")}
+          {F("نحوه ورود","entryType",["خرید","تولد","هدیه","سایر"])}
+          {F("وزن ورود (کیلو)","entryWeight",null,"","number")}
+          {F("قیمت خرید (ریال)","purchasePrice",null,"","number")}
+          {F("کد پدر","fatherCode",null,"— یا VRG-Q01")}
+          {F("کد مادر","motherCode",null,"—")}
+        </div>
+        <div style={{background:"rgba(212,168,67,0.13)",borderRadius:8,padding:"10px 14px",margin:"14px 0",fontSize:12,color:"#8FAF97"}}>
+          💡 کد پدر را حتماً وارد کنید — برای بررسی همخونی ضروری است
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={onClose} style={{background:"transparent",color:"#E4EDE6",border:"1px solid #263D2C",borderRadius:8,padding:12,fontFamily:"inherit",fontSize:14,fontWeight:700,cursor:"pointer",flex:1}}>انصراف</button>
+          <button onClick={save} style={{background:"#5BBA6F",color:"#0B1610",border:"none",borderRadius:8,padding:12,fontFamily:"inherit",fontSize:14,fontWeight:800,cursor:"pointer",flex:2}}>💾 ثبت دام</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function VargehMulti(){
   const[user,setUser]=useState(()=>{try{const u=localStorage.getItem("vargeh_user");return u?JSON.parse(u):null;}catch{return null;}});
   const[loginName,setLoginName]=useState("");
@@ -713,7 +778,7 @@ export default function VargehMulti(){
         ))}
       </div>
 
-      {addModal==="animal"&&<AddAnimal onClose={()=>setAddModal(null)}/>}
+      {addModal==="animal"&&<AddAnimal onClose={()=>setAddModal(null)} animals={animals} saveAnimals={saveAnimals} toast_={toast_}/>}
       {addModal&&addModal!=="animal"&&sel&&<SubForm type={addModal} aid={sel.id} onClose={()=>setAddModal(null)}/>}
 
       {delId&&(
